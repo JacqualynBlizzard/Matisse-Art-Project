@@ -1,0 +1,166 @@
+<!DOCTYPE HTML>
+<style>
+  *{
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overflow: hidden;
+  }
+  #menu {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  #colors {
+    list-style-type: none;
+  }
+  #colors li {
+    display: inline-block;
+    margin: 5px 1px;
+  }
+  #colors li a {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+  }
+  #colors li a:hover {
+    cursor: pointer;
+  }
+
+  .blue {
+    background-color: rgba(19,88,163,1);
+  }
+  .green {
+    background-color: rgba(48,156,80,1);
+  }
+  .red {
+    background-color: rgba(215,50,44,1);
+  }
+  .pink {
+    background-color: rgba(207,65,139,1);
+  }
+  .orange { background-color:
+    rgba(247,148,44,1);
+  }
+
+</style>
+
+<html>
+    <canvas id="myCanvas"></canvas>
+    <div id="menu">
+      <div class="tray">
+        <button id="clear">Clear</button>
+        <button id="save">Save</button>
+        <ul id="colors">
+          <li><a onclick="colorBtnsClick([19,88,163]);" title="blue" class="blue"> </a></li>
+          <li><a onclick="colorBtnsClick([48,156,80]);" title="green" class="green"> </a></li>
+          <li><a onclick="colorBtnsClick([215,50,44]);" title="red" class="red"> </a></li>
+          <li><a onclick="colorBtnsClick([207,65,139]);" title="pink" class="pink"> </a></li>
+          <li><a onclick="colorBtnsClick([247,148,44]);" title="orange" class="orange"> </a></li>
+        </ul>
+      </div>
+  </div>
+</html>
+
+<script>
+  // initialize drawing status
+  var shape = {
+      status: false,
+      color: 'rgba(34,121,192,.85)',
+      shadowColor: 'rgba(34,121,192,1)',
+      startX: 0,
+      startY: 0,
+      coords: []
+  };
+
+  // get the menu and buttons
+  var menu = document.getElementById('menu');
+  var buttonClear = document.getElementById('clear');
+  var buttonSave = document.getElementById('save');
+
+  //make the canvas and set it to the full width of the page
+  var canvas = document.getElementById('myCanvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // get the context
+  var ctx = canvas.getContext('2d');
+
+  //fill the initial canvas
+  ctx.fillStyle = "#fffff3";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // set the click event to start drawing
+  canvas.addEventListener('click', function(event) {
+
+    //get the x, y just clicked
+    var currentX = event.clientX;
+    var currentY = event.clientY;
+
+  // if we are drawing a new shape, star the new shape at the current click point that is 2 pixels wide and 2 pixles tall
+  //status is really saying, are we drawing a shape right now, true or false
+  if (shape.status == false) {
+    menu.style.display = 'none';
+
+    //set fill, stroke, and shadwo styles for the shape
+    ctx.fillStyle = shape.color;
+    ctx.strokeStyle = shape.color;
+    ctx.lineWidth = 1;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.shadowBlur = 1;
+    ctx.shadowColor = shape.shadowColor;
+
+    //draw the shape
+    shape.status = true;
+    shape.startX = currentX;
+    shape.startY = currentY;
+    ctx.beginPath();
+    ctx.moveTo(currentX, currentY);
+    ctx.fillRect(currentX, currentY, 2, 2);
+  }
+
+  // 3. else, we can draw a line of our shape...
+  else {
+      ctx.lineTo(currentX, currentY);
+      ctx.stroke();
+
+      // if this is within 10px of the initial coordinate
+      // close it and fill the shape
+      if ( Math.abs( shape.startX - currentX ) < 11 && Math.abs( shape.startY - currentY ) < 11 ) {
+        ctx.lineTo( shape.startX, shape.startY);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
+
+        menu.style.display = '';
+
+
+        // we are done drawing the current shape, make it so the next click starts a new shape
+        shape.status = false;
+        shape.coords = [];
+        return;
+      }
+    }
+
+  // add these coordinates to the array
+  shape.coords.push([currentX,currentY]);
+  });
+
+  //clear the canvas when the clear button is clicked
+  buttonClear.addEventListener('click', function(){
+    ctx.fillStyle = "#fffff3";
+    ctx.fillRect(0,0, canvas.width, canvas.height);
+  });
+
+  //open png in new window when save button is clicked
+  buttonSave.addEventListener('click', function(){
+    window.open(canvas.toDataURL('image/png'));
+  });
+    //change color of cut-out based on color button chosen
+    var colorBtnsClick = function(rgb) {
+      shape.color = 'rgba(' + rgb.join(',')+',1)';
+      console.log(shape);
+    };
+</script>
